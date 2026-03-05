@@ -28,23 +28,22 @@
 
 namespace malmo
 {
-    boost::shared_ptr<ClientConnection> ClientConnection::create(boost::asio::io_service& io_service, std::string address, int port)
+    boost::shared_ptr<ClientConnection> ClientConnection::create(boost::asio::io_context& io_service, std::string address, int port)
     {
         return boost::shared_ptr<ClientConnection>(new ClientConnection(io_service, address, port));
     }
 
     void ClientConnection::send(std::string message)
     {
-        this->io_service.post(boost::bind(&ClientConnection::writeImpl, shared_from_this(), message));
+        boost::asio::post(this->io_service, boost::bind(&ClientConnection::writeImpl, shared_from_this(), message));
     }
 
-    ClientConnection::ClientConnection(boost::asio::io_service& io_service, std::string address, int port)
+    ClientConnection::ClientConnection(boost::asio::io_context& io_service, std::string address, int port)
         : io_service(io_service)
     {
         LOGTRACE(LT("Creating ClientConnection to "), address, LT(":"), port);
 
         this->resolver = std::unique_ptr<boost::asio::ip::tcp::resolver>(new boost::asio::ip::tcp::resolver(io_service));
-        this->query = std::unique_ptr<boost::asio::ip::tcp::resolver::query>(new boost::asio::ip::tcp::resolver::query(address, std::to_string(port)));
 
         this->socket = std::unique_ptr<boost::asio::ip::tcp::socket>(new boost::asio::ip::tcp::socket(io_service));
         this->deadline = std::unique_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(io_service, this->timeout));
@@ -60,15 +59,15 @@ namespace malmo
 
         this->connect_error_code = boost::asio::error::would_block;
 
-        this->resolver->async_resolve(*query, [&](const boost::system::error_code& ec, boost::asio::ip::tcp::resolver::iterator endpoint_iterator) {
-            if (ec || endpoint_iterator == boost::asio::ip::tcp::resolver::iterator())
+        this->resolver->async_resolve(address, std::to_string(port), [&](const boost::system::error_code& ec, boost::asio::ip::tcp::resolver::results_type endpoints) {
+            if (ec || endpoints.empty())
             {
                 LOGERROR(LT("Failed to resolve "), address, LT(":"), port, LT(" - "), ec.message());
                 process(ec);
             }
             else
             {
-                this->socket->async_connect(endpoint_iterator->endpoint(), [&](const boost::system::error_code& ec) {
+                boost::asio::async_connect(*this->socket, endpoints, [&](const boost::system::error_code& ec, const boost::asio::ip::tcp::endpoint&) {
                     LOGTRACE(LT("ClientConnection connected to "), address, LT(":"), port);
                     process(ec);
                 });
@@ -84,8 +83,7 @@ namespace malmo
 
         // Stop deadline timer and release resolve resources.
         deadline.reset();
-        resolver.release();
-        query.release();
+        resolver.reset();
 
         // Record error code and start processing writes.
         boost::lock_guard<boost::mutex> scope_guard(this->outbox_mutex);

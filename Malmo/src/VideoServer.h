@@ -40,7 +40,7 @@ namespace malmo
     {
         public:
 
-            VideoServer( boost::asio::io_service& io_service, int port, short width, short height, short channels, TimestampedVideoFrame::FrameType frametype, const boost::function<void(const TimestampedVideoFrame message)> handle_frame );
+            VideoServer( boost::asio::io_context& io_service, int port, short width, short height, short channels, TimestampedVideoFrame::FrameType frametype, const boost::function<void(const TimestampedVideoFrame message)> handle_frame );
             
             //! Request that the video is saved in an mp4 file. Call before either startInBackground() or startRecording().
             VideoServer& recordMP4(std::string path, int frames_per_second, int64_t bit_rate, bool drop_input_frames);
@@ -96,7 +96,7 @@ namespace malmo
             TimestampedVideoFrame::Transform transform;
             TimestampedVideoFrame::FrameType frametype;
             boost::shared_ptr<TCPServer> server;
-            boost::asio::io_service& io_service;
+            boost::asio::io_context& io_service;
             int port;
             std::vector<std::unique_ptr<IFrameWriter>> writers;
 

@@ -43,7 +43,7 @@ namespace malmo
         //! \param address The IP address of the remote endpoint.
         //! \param port The port of the remote endpoint.
         //! \returns The connection as a shared pointer.
-        static boost::shared_ptr< ClientConnection > create(boost::asio::io_service& io_service, std::string address, int port);
+        static boost::shared_ptr< ClientConnection > create(boost::asio::io_context& io_service, std::string address, int port);
 
         //! Sends a string over the open connection.
         //! \param message The string to send. Will have newline appended if needed.
@@ -62,7 +62,7 @@ namespace malmo
         int64_t getTimeout() { return timeout.total_seconds(); }
 
     private:
-        ClientConnection(boost::asio::io_service& io_service, std::string address, int port);
+        ClientConnection(boost::asio::io_context& io_service, std::string address, int port);
 
         void writeImpl(std::string message);
 
@@ -74,10 +74,9 @@ namespace malmo
 
         boost::posix_time::time_duration timeout = boost::posix_time::seconds(60);
 
-        boost::asio::io_service& io_service;
+        boost::asio::io_context& io_service;
 
         std::unique_ptr< boost::asio::ip::tcp::resolver> resolver;
-        std::unique_ptr< boost::asio::ip::tcp::resolver::query> query;
 
         std::unique_ptr<boost::asio::ip::tcp::socket> socket;
         std::unique_ptr<boost::asio::deadline_timer> deadline;

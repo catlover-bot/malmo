@@ -34,11 +34,14 @@
 #include "TCPClient.h"
 
 // Boost:
+#include <boost/asio.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/thread.hpp>
 
 // STL:
-#include <string>
 #include <exception>
+#include <memory>
+#include <string>
 
 namespace malmo
 {
@@ -194,7 +197,7 @@ namespace malmo
             
             void processReceivedReward( TimestampedReward reward );
             
-            boost::asio::io_service io_service;
+            boost::asio::io_context io_service;
             boost::shared_ptr<StringServer>   mission_control_server;
             boost::shared_ptr<VideoServer>    video_server;
             boost::shared_ptr<VideoServer>    depth_server;
@@ -202,7 +205,7 @@ namespace malmo
             boost::shared_ptr<VideoServer>    colourmap_server;
             boost::shared_ptr<StringServer>   rewards_server;
             boost::shared_ptr<StringServer>   observations_server;
-            boost::optional<boost::asio::io_service::work> work;
+            std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work;
             std::vector<boost::shared_ptr<boost::thread>> background_threads;
 
             boost::shared_ptr<ClientConnection> commands_connection;

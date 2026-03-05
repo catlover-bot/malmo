@@ -36,14 +36,13 @@ using boost::asio::ip::tcp;
 
 namespace malmo
 {
-    void SendOverTCP(boost::asio::io_service& io_service, std::string address, int port, std::vector<unsigned char> message, bool withSizeHeader)
+    void SendOverTCP(boost::asio::io_context& io_service, std::string address, int port, std::vector<unsigned char> message, bool withSizeHeader)
     {
         tcp::resolver resolver(io_service);
-        tcp::resolver::query query(address, boost::lexical_cast<std::string>(port));
-        tcp::resolver::iterator endpoint_iterator;
+        tcp::resolver::results_type endpoints;
         try
         {
-            endpoint_iterator = resolver.resolve(query);
+            endpoints = resolver.resolve(address, boost::lexical_cast<std::string>(port));
         }
         catch (boost::system::system_error e)
         {
@@ -54,7 +53,7 @@ namespace malmo
         tcp::socket socket(io_service);
         try
         {
-            boost::asio::connect(socket, endpoint_iterator);
+            boost::asio::connect(socket, endpoints);
         }
         catch (boost::system::system_error e)
         {
@@ -94,19 +93,18 @@ namespace malmo
         }
     }
 
-    void SendStringOverTCP(boost::asio::io_service& io_service, std::string address, int port, std::string message, bool withSizeHeader)
+    void SendStringOverTCP(boost::asio::io_context& io_service, std::string address, int port, std::string message, bool withSizeHeader)
     {
         SendOverTCP(io_service,address, port, std::vector<unsigned char>(message.begin(), message.end()), withSizeHeader);
     }
 
-    std::string Rpc::sendStringAndGetShortReply(boost::asio::io_service& io_service, const std::string& ip_address, int port, const std::string& message, bool withSizeHeader)
+    std::string Rpc::sendStringAndGetShortReply(boost::asio::io_context& io_service, const std::string& ip_address, int port, const std::string& message, bool withSizeHeader)
     {
         const u_long MAX_PACKET_LENGTH = 1024;
         unsigned char data[MAX_PACKET_LENGTH + 1];
         std::vector<unsigned char> message_vector(message.begin(), message.end());
 
         tcp::resolver resolver(io_service);
-        tcp::resolver::query query(ip_address, boost::lexical_cast<std::string>(port));
         tcp::socket socket(io_service);
 
         // Set up a deadline timer to close the socket on timeout, aborting any async io.
@@ -126,20 +124,17 @@ namespace malmo
 
         error_code_sync.init_error_code();
 
-        resolver.async_resolve(query, [&](const boost::system::error_code& ec, tcp::resolver::iterator endpoint_iterator) {
-            if (ec)
+        resolver.async_resolve(ip_address, boost::lexical_cast<std::string>(port), [&](const boost::system::error_code& ec, tcp::resolver::results_type endpoints) {
+            if (ec || endpoints.empty())
             {
                 LOGERROR(LT("Failed to resolve "), ip_address, LT(":"), port, LT(" - "), ec.message());
                 error_code_sync.signal_error_code(ec);
             }
             else
             {
-                if (endpoint_iterator == tcp::resolver::iterator()) {
-                    error_code_sync.signal_error_code(boost::asio::error::fault);
-                }
-                else {
-                    socket.async_connect(endpoint_iterator->endpoint(), boost::bind(&ErrorCodeSync::signal_error_code, &this->error_code_sync, boost::asio::placeholders::error));
-                }
+                boost::asio::async_connect(socket, endpoints, [&](const boost::system::error_code& connect_ec, const tcp::endpoint&) {
+                    this->error_code_sync.signal_error_code(connect_ec);
+                });
             }
         });
 

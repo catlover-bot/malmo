@@ -30,7 +30,6 @@
 // Boost:
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/utility/in_place_factory.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -64,16 +63,16 @@ namespace malmo
         this->addOptionalFlag("test",   "run this as an integration test");
 
         // start the io_service on background threads
-        this->work = boost::in_place(boost::ref(this->io_service));
+        this->work.reset(new boost::asio::executor_work_guard<boost::asio::io_context::executor_type>(boost::asio::make_work_guard(this->io_service)));
         const int NUM_BACKGROUND_THREADS = 3; // can be increased if I/O becomes a bottleneck
         for( int i = 0; i < NUM_BACKGROUND_THREADS; i++ )
-            this->background_threads.push_back( boost::make_shared<boost::thread>( boost::bind( &boost::asio::io_service::run, &this->io_service ) ) );
+            this->background_threads.push_back( boost::make_shared<boost::thread>( boost::bind( &boost::asio::io_context::run, &this->io_service ) ) );
     }
 
     AgentHost::~AgentHost()
     {
         LOGSIMPLE(LOG_FINE, "Destroying AgentHost - waiting for io_service to stop...");
-        this->work = boost::none;
+        this->work.reset();
         this->io_service.stop();
         for( auto& t : this->background_threads )
             t->join();

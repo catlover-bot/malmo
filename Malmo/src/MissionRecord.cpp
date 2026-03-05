@@ -234,7 +234,7 @@ namespace malmo
         {
             relpath /= *it_file;
         }
-        std::string file_name_in_archive = relpath.normalize().string();
+        std::string file_name_in_archive = relpath.lexically_normal().string();
         std::replace(file_name_in_archive.begin(), file_name_in_archive.end(), '\\', '/');
         LOGINFO(LT("- adding "), path.string(), LT(" as "), file_name_in_archive);
         archive.putFile(path.string().c_str(), file_name_in_archive.c_str());

@@ -21,7 +21,7 @@
 #define _TCPCLIENT_H_
 
 // Boost:
-#include <boost/asio/io_service.hpp>
+#include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 // STL:
@@ -45,7 +45,7 @@ namespace malmo
     //! \param message The message to send.
     //! \param withSizeHeader If true, prepends a 4-byte integer containing the size of the message.
     //! \ref ClientConnection
-    void SendOverTCP(boost::asio::io_service& io_service, std::string address, int port, std::vector<unsigned char> message, bool withSizeHeader);
+    void SendOverTCP(boost::asio::io_context& io_service, std::string address, int port, std::vector<unsigned char> message, bool withSizeHeader);
 
     //! Sends a string over TCP. Creates and closes a connection in the process.
     //! If sending many messages to the same place, use ClientConnection instead
@@ -54,7 +54,7 @@ namespace malmo
     //! \param message The message to send.
     //! \param withSizeHeader If true, prepends a 4-byte integer containing the size of the message.
     //! \ref ClientConnection
-    void SendStringOverTCP(boost::asio::io_service& io_service, std::string address, int port, std::string message, bool withSizeHeader);
+    void SendStringOverTCP(boost::asio::io_context& io_service, std::string address, int port, std::string message, bool withSizeHeader);
     
     class Rpc {
     public:
@@ -66,7 +66,7 @@ namespace malmo
         //! \param withSizeHeader If true, prepends a 4-byte integer containing the size of the message.
         //! \returns The reply as a string.
         //! \ref ClientConnection
-        std::string sendStringAndGetShortReply(boost::asio::io_service& io_service, const std::string& ip_address, int port, const std::string& message, bool withSizeHeader);
+        std::string sendStringAndGetShortReply(boost::asio::io_context& io_service, const std::string& ip_address, int port, const std::string& message, bool withSizeHeader);
     
         //! Set the request/reply timeout.
         //! \param seconds The timeout delay in seconds.

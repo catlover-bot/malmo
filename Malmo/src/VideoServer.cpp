@@ -27,7 +27,7 @@
 
 namespace malmo 
 {
-    VideoServer::VideoServer( boost::asio::io_service& io_service, int port, short width, short height, short channels, TimestampedVideoFrame::FrameType frametype, const boost::function<void(TimestampedVideoFrame message)> handle_frame )
+    VideoServer::VideoServer( boost::asio::io_context& io_service, int port, short width, short height, short channels, TimestampedVideoFrame::FrameType frametype, const boost::function<void(TimestampedVideoFrame message)> handle_frame )
         : handle_frame( handle_frame )
         , width( width )
         , height( height )

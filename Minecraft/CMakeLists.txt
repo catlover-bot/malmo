@@ -26,7 +26,7 @@ endif()
 # We currently do an in-source build for the Mod, because of gradle.
 add_custom_target( Minecraft
   ALL
-  COMMAND ${GRADLE} setupDecompWorkspace build testClasses -x test --stacktrace -Pversion=${MALMO_VERSION}
+  COMMAND ${GRADLE} setupCIWorkspace build testClasses -x test --stacktrace -Pversion=${MALMO_VERSION}
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/version.properties
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMENT "Building Minecraft..."
@@ -74,4 +74,3 @@ install( PROGRAMS launchClient.sh DESTINATION Minecraft/ )
 # Make sure the version number is part of the installation:
 install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/version.properties DESTINATION Minecraft/src/main/resources )
 install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/build/libs/MalmoMod-${MALMO_VERSION}.jar DESTINATION "Mod" )
-

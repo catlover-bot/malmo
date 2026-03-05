@@ -27,7 +27,7 @@
 #include <iostream>
 
 namespace malmo {
-    StringServer::StringServer(boost::asio::io_service& io_service, int port, const boost::function<void(const TimestampedString string_message)> handle_string, const std::string& log_name)
+    StringServer::StringServer(boost::asio::io_context& io_service, int port, const boost::function<void(const TimestampedString string_message)> handle_string, const std::string& log_name)
         : handle_string(handle_string)
         , io_service(io_service)
         , port(port)

@@ -42,7 +42,7 @@ using boost::asio::ip::tcp;
 
 namespace malmo
 {
-    TCPServer::TCPServer( boost::asio::io_service& io_service, int port, boost::function<void(const TimestampedUnsignedCharVector) > callback, const std::string& log_name )
+    TCPServer::TCPServer( boost::asio::io_context& io_service, int port, boost::function<void(const TimestampedUnsignedCharVector) > callback, const std::string& log_name )
         : onMessageReceived(callback)
         , confirm_with_fixed_reply(false)
         , expect_size_header(true)
@@ -154,7 +154,7 @@ namespace malmo
         return port;
     }
     
-    void TCPServer::bindToRandomPortInRange(boost::asio::io_service& io_service, int port_min, int port_max)
+    void TCPServer::bindToRandomPortInRange(boost::asio::io_context& io_service, int port_min, int port_max)
     {
         LOGSECTION(LOG_FINE, "Choosing random port for " + this->log_name)
 
@@ -181,7 +181,7 @@ namespace malmo
         throw std::runtime_error( "All ports in range were busy!" );
     }
     
-    void TCPServer::bindToPort(boost::asio::io_service& io_service, int port)
+    void TCPServer::bindToPort(boost::asio::io_context& io_service, int port)
     {
         tcp::endpoint endpt = tcp::endpoint( tcp::v4(), port );
         try

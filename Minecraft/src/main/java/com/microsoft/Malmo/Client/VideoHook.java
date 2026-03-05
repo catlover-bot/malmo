@@ -57,6 +57,7 @@ import com.microsoft.Malmo.Utils.TextureHelper;
  * We use this to send video frames over sockets.
  */
 public class VideoHook {
+    private static final boolean IS_MAC = System.getProperty("os.name", "").toLowerCase().contains("mac");
     /**
      * If the sockets are not yet open we delay before retrying. Value is in
      * nanoseconds.
@@ -128,8 +129,11 @@ public class VideoHook {
         this.headerbuffer = ByteBuffer.allocate(20).order(ByteOrder.BIG_ENDIAN);
         this.renderWidth = videoProducer.getWidth();
         this.renderHeight = videoProducer.getHeight();
-        resizeIfNeeded();
-        Display.setResizable(false); // prevent the user from resizing using the window borders
+        if (!IS_MAC)
+        {
+            resizeIfNeeded();
+            Display.setResizable(false); // prevent the user from resizing using the window borders
+        }
 
         ClientAgentConnection cac = missionInit.getClientAgentConnection();
         if (cac == null)
@@ -217,7 +221,10 @@ public class VideoHook {
         this.isRunning = false;
 
         // allow the user to resize the window again
-        Display.setResizable(true);
+        if (!IS_MAC)
+        {
+            Display.setResizable(true);
+        }
 
         // And fill in some diagnostic data:
         if (diags != null)
@@ -245,7 +252,10 @@ public class VideoHook {
         if( event.phase == Phase.START )
         {
             // this is here in case the user has resized the window during a mission
-            resizeIfNeeded();
+            if (!IS_MAC)
+            {
+                resizeIfNeeded();
+            }
         }
     }
     

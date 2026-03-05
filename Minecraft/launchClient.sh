@@ -68,8 +68,6 @@ fi
 
 # Finally we can launch the Mod, which will load the config file
 while
-    ./gradlew setupDecompWorkspace
-    ./gradlew build
-    ./gradlew runClient
+    ./gradlew --no-daemon -Dorg.gradle.java.home="${JAVA_HOME}" runClient -x getAssets -x getAssetIndex
     [ $replaceable -gt 0 ]
 do :; done

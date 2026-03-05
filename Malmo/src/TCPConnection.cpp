@@ -29,7 +29,7 @@ using boost::asio::ip::tcp;
 
 namespace malmo
 {
-    boost::shared_ptr<TCPConnection> TCPConnection::create(boost::asio::io_service& io_service, boost::function<void(const TimestampedUnsignedCharVector) > callback, bool expect_size_header, const std::string& log_name)
+    boost::shared_ptr<TCPConnection> TCPConnection::create(boost::asio::io_context& io_service, boost::function<void(const TimestampedUnsignedCharVector) > callback, bool expect_size_header, const std::string& log_name)
     {
         return boost::shared_ptr<TCPConnection>(new TCPConnection(io_service, callback, expect_size_header, log_name) );
     }
@@ -196,7 +196,7 @@ namespace malmo
         this->read(); // Continue on with reading of next request message.
     }
 
-    TCPConnection::TCPConnection(boost::asio::io_service& io_service, boost::function<void(const TimestampedUnsignedCharVector) > callback, bool expect_size_header, const std::string& log_name)
+    TCPConnection::TCPConnection(boost::asio::io_context& io_service, boost::function<void(const TimestampedUnsignedCharVector) > callback, bool expect_size_header, const std::string& log_name)
         : socket(io_service)
         , onMessageReceived(callback)
         , confirm_with_fixed_reply(false)
